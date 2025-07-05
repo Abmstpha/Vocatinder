@@ -271,7 +271,7 @@
     <div id="start-screen">
       <div class="instructions">
         <h3>How to Play:</h3>
-        <p>Guess the gender of 20 French nouns!</p>
+        <p>Guess the gender of 30 French nouns!</p>
         <div class="swipe-hints">
           <span class="hint-left">← Left = Feminine (la)</span>
           <span class="hint-right">Right = Masculine (le) →</span>
@@ -297,7 +297,7 @@
       <div class="progress">
         <div class="progress-bar" id="progress-bar"></div>
       </div>
-      <div class="progress-text" id="progress-text">Word 1 of 20</div>
+      <div class="progress-text" id="progress-text">Word 1 of 30</div>
       <div class="word-card" id="word-card">
         <div class="word" id="current-word">Loading...</div>
       </div>
@@ -313,7 +313,7 @@
     <div id="score-screen" style="display: none;">
       <div class="score-container">
         <h2>Game Complete!</h2>
-        <div class="final-score" id="final-score">You got 0 out of 20 correct</div>
+        <div class="final-score" id="final-score">You got 0 out of 30 correct</div>
         <div id="score-message"></div>
         <button class="play-again-btn" onclick="startGame()">Play Again</button>
       </div>
@@ -415,7 +415,7 @@
       gameActive = false;
       hideAllScreens();
       scoreScreen.style.display = 'block';
-      finalScore.textContent = `You got ${score} out of 20 correct`;
+      finalScore.textContent = `You got ${score} out of 30 correct`;
       let scoreClass = '', message = '';
       if (score >= 17) {
         scoreClass = 'score-excellent'; message = '🎉 Excellent! You\'re a French gender master!';

@@ -74,11 +74,11 @@ Rules:
             }
         }
         
-        if (words.length < 20) {
+        if (words.length < 30) {
             throw new Error('Not enough valid words generated');
         }
         
-        res.json({ words: words.slice(0, 20) });
+        res.json({ words: words.slice(0, 30) });
         
     } catch (error) {
         console.error('Mistral API error:', error);
