@@ -408,24 +408,32 @@
             wordCard.className = 'word-card';
         }
 
-        function makeGuess(guess) {
-            if (!gameActive) return;
-            const currentWord = currentWords[currentWordIndex];
-            const isCorrect = guess === currentWord.gender;
+        function makeGuess(guess, swipeDirection = null) {
+    if (!gameActive) return;
 
-            if (isCorrect) {
-                score++;
-                wordCard.classList.add('correct', 'slide-right');
-            } else {
-                wordCard.classList.add('incorrect', 'slide-left');
-            }
+    const currentWord = currentWords[currentWordIndex];
+    const isCorrect = guess === currentWord.gender;
 
-            setTimeout(() => {
-                wordCard.className = 'word-card';
-                currentWordIndex++;
-                displayCurrentWord();
-            }, 600);
-        }
+    // Decide swipe class based on direction or guess fallback
+    let swipeClass = swipeDirection === 'left' ? 'slide-left'
+                    : swipeDirection === 'right' ? 'slide-right'
+                    : guess === 'feminine' ? 'slide-left'
+                    : 'slide-right';
+
+    if (isCorrect) {
+        score++;
+        wordCard.classList.add('correct', swipeClass);
+    } else {
+        wordCard.classList.add('incorrect', swipeClass);
+    }
+
+    setTimeout(() => {
+        wordCard.className = 'word-card';
+        currentWordIndex++;
+        displayCurrentWord();
+    }, 600);
+}
+
 
         function endGame() {
             gameActive = false;
@@ -465,13 +473,18 @@
         });
 
         function handleSwipe() {
-            const swipeThreshold = 50;
-            const swipeDistance = touchEndX - touchStartX;
-            if (Math.abs(swipeDistance) > swipeThreshold) {
-                if (swipeDistance > 0) makeGuess('masculine');
-                else makeGuess('feminine');
-            }
+    const swipeThreshold = 50;
+    const swipeDistance = touchEndX - touchStartX;
+
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+        if (swipeDistance > 0) {
+            makeGuess('masculine', 'right');
+        } else {
+            makeGuess('feminine', 'left');
         }
+    }
+}
+
 
         let mouseStartX = 0, mouseEndX = 0, isMouseDown = false;
         wordCard.addEventListener('mousedown', (e) => {
@@ -486,8 +499,9 @@
             const swipeThreshold = 50;
             const swipeDistance = mouseEndX - mouseStartX;
             if (Math.abs(swipeDistance) > swipeThreshold) {
-                if (swipeDistance > 0) makeGuess('masculine');
-                else makeGuess('feminine');
+                if (swipeDistance > 0) { makeGuess('masculine', 'right');
+
+                } else { makeGuess('feminine', 'left');
             }
         });
 
