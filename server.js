@@ -7,7 +7,7 @@ const app = express();
 const PORT = 3000;
 
 // Mistral API configuration
-const MISTRAL_API_KEY = 'LjXf7gFs1epGUJvpRuilnaugZRZ6IQlN';
+const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
 
 // Serve static files
