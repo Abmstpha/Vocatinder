@@ -98,23 +98,29 @@
         .word-card.correct {
             border-color: #4CAF50;
             background: #E8F5E8;
-            animation: flash-green 0.6s ease;
         }
 
         .word-card.incorrect {
             border-color: #f44336;
             background: #FFEBEE;
-            animation: flash-red 0.6s ease;
         }
 
-        @keyframes flash-green {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .word-card.slide-left {
+            animation: slideLeft 0.6s ease forwards;
         }
 
-        @keyframes flash-red {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .word-card.slide-right {
+            animation: slideRight 0.6s ease forwards;
+        }
+
+        @keyframes slideLeft {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(-120%) rotate(-10deg); opacity: 0; }
+        }
+
+        @keyframes slideRight {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(120%) rotate(10deg); opacity: 0; }
         }
 
         .word {
@@ -243,15 +249,15 @@
                 padding: 20px;
                 min-width: 320px;
             }
-            
+
             h1 {
                 font-size: 2em;
             }
-            
+
             .word {
                 font-size: 2.5em;
             }
-            
+
             .word-card {
                 padding: 40px 20px;
                 min-height: 150px;
@@ -326,13 +332,11 @@
     </div>
 
     <script>
-        // Game state
         let currentWords = [];
         let currentWordIndex = 0;
         let score = 0;
         let gameActive = false;
 
-        // DOM elements
         const startScreen = document.getElementById('start-screen');
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
@@ -346,59 +350,33 @@
         const scoreMessage = document.getElementById('score-message');
         const errorMessage = document.getElementById('error-message');
 
-        // Touch handling for swipe gestures
         let touchStartX = 0;
         let touchEndX = 0;
 
         async function generateWordsFromServer() {
-            try {
-                const response = await fetch('/api/generate-words', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                return data.words;
-                
-            } catch (error) {
-                console.error('Server API error:', error);
-                throw error;
-            }
+            const response = await fetch('/api/generate-words', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            return data.words;
         }
 
         async function startGame() {
-            try {
-                // Reset game state
-                currentWords = [];
-                currentWordIndex = 0;
-                score = 0;
-                gameActive = false;
+            currentWords = [];
+            currentWordIndex = 0;
+            score = 0;
+            gameActive = false;
 
-                // Show loading screen
-                hideAllScreens();
-                loadingScreen.style.display = 'block';
+            hideAllScreens();
+            loadingScreen.style.display = 'block';
+            currentWords = await generateWordsFromServer();
 
-                // Generate words from server (which uses Mistral)
-                currentWords = await generateWordsFromServer();
-                
-                // Start the game
-                gameActive = true;
-                hideAllScreens();
-                gameScreen.style.display = 'block';
-                
-                // Display first word
-                displayCurrentWord();
-                
-            } catch (error) {
-                console.error('Failed to start game:', error);
-                showError('Failed to generate words from Mistral AI. Please check your internet connection and try again.');
-            }
+            gameActive = true;
+            hideAllScreens();
+            gameScreen.style.display = 'block';
+            displayCurrentWord();
         }
 
         function hideAllScreens() {
@@ -423,31 +401,27 @@
 
             const word = currentWords[currentWordIndex];
             currentWordEl.textContent = word.word;
-            
-            // Update progress
+
             const progress = ((currentWordIndex + 1) / currentWords.length) * 100;
             progressBar.style.width = progress + '%';
             progressText.textContent = `Word ${currentWordIndex + 1} of ${currentWords.length}`;
-
-            // Reset card styling
             wordCard.className = 'word-card';
         }
 
         function makeGuess(guess) {
             if (!gameActive) return;
-
             const currentWord = currentWords[currentWordIndex];
             const isCorrect = guess === currentWord.gender;
 
             if (isCorrect) {
                 score++;
-                wordCard.classList.add('correct');
+                wordCard.classList.add('correct', 'slide-right');
             } else {
-                wordCard.classList.add('incorrect');
+                wordCard.classList.add('incorrect', 'slide-left');
             }
 
-            // Move to next word after animation
             setTimeout(() => {
+                wordCard.className = 'word-card';
                 currentWordIndex++;
                 displayCurrentWord();
             }, 600);
@@ -457,14 +431,9 @@
             gameActive = false;
             hideAllScreens();
             scoreScreen.style.display = 'block';
-
-            // Display final score
             finalScore.textContent = `You got ${score} out of 20 correct`;
-            
-            // Add score styling and message
-            let scoreClass = '';
-            let message = '';
-            
+
+            let scoreClass = '', message = '';
             if (score >= 17) {
                 scoreClass = 'score-excellent';
                 message = '🎉 Excellent! You\'re a French gender master!';
@@ -475,23 +444,17 @@
                 scoreClass = 'score-needs-work';
                 message = '📚 Keep studying! French genders can be tricky!';
             }
-            
+
             finalScore.className = `final-score ${scoreClass}`;
             scoreMessage.textContent = message;
         }
 
-        // Keyboard event listeners
         document.addEventListener('keydown', (e) => {
             if (!gameActive) return;
-            
-            if (e.key === 'ArrowLeft') {
-                makeGuess('feminine');
-            } else if (e.key === 'ArrowRight') {
-                makeGuess('masculine');
-            }
+            if (e.key === 'ArrowLeft') makeGuess('feminine');
+            else if (e.key === 'ArrowRight') makeGuess('masculine');
         });
 
-        // Touch event listeners for swipe gestures
         wordCard.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
         });
@@ -504,21 +467,13 @@
         function handleSwipe() {
             const swipeThreshold = 50;
             const swipeDistance = touchEndX - touchStartX;
-
             if (Math.abs(swipeDistance) > swipeThreshold) {
-                if (swipeDistance > 0) {
-                    makeGuess('masculine');
-                } else {
-                    makeGuess('feminine');
-                }
+                if (swipeDistance > 0) makeGuess('masculine');
+                else makeGuess('feminine');
             }
         }
 
-        // Mouse event listeners for click and drag
-        let mouseStartX = 0;
-        let mouseEndX = 0;
-        let isMouseDown = false;
-
+        let mouseStartX = 0, mouseEndX = 0, isMouseDown = false;
         wordCard.addEventListener('mousedown', (e) => {
             mouseStartX = e.clientX;
             isMouseDown = true;
@@ -528,16 +483,11 @@
             if (!isMouseDown) return;
             mouseEndX = e.clientX;
             isMouseDown = false;
-            
             const swipeThreshold = 50;
             const swipeDistance = mouseEndX - mouseStartX;
-
             if (Math.abs(swipeDistance) > swipeThreshold) {
-                if (swipeDistance > 0) {
-                    makeGuess('masculine');
-                } else {
-                    makeGuess('feminine');
-                }
+                if (swipeDistance > 0) makeGuess('masculine');
+                else makeGuess('feminine');
             }
         });
 
@@ -545,7 +495,6 @@
             isMouseDown = false;
         });
 
-        // Prevent text selection on the word card
         wordCard.addEventListener('selectstart', (e) => {
             e.preventDefault();
         });
