@@ -17,20 +17,22 @@ app.use(express.json());
 // API endpoint to generate French words
 app.post('/api/generate-words', async (req, res) => {
     try {
-        const prompt = `Generate exactly 20 common French nouns with their gender. Format each as JSON like this:
+        const prompt = `Generate exactly 30 common French nouns with their gender. Format each as JSON like this:
 {"word": "chambre", "gender": "feminine"}
 {"word": "livre", "gender": "masculine"}
 
 Rules:
 - Only include common, everyday French nouns
 - No proper nouns or names
-- Mix everyday, abstract, rare, and domain-specific nouns.
-- Make the selection unpredictable and balanced.
+- Words must span across daily life: home, work, school, groceries, transport, health, objects, technology, food, street, conversations, etc.
+- Ensure diversity: include a mix of indoor/outdoor, physical/abstract, personal/public, and family/social concepts
+- Do not include regional slang, archaic, or rare terms
+- Make the selection unpredictable and balanced
 - Do not repeat words in the same sample
 - Gender must be exactly "masculine" or "feminine"
-- No explanations, just the 20 JSON objects, one per line
-- Always a Mix of masculine and feminine words
-- Words should be appropriate for language learners`;
+- No explanations or numbering, just the 30 JSON objects, one per line
+- Always a balanced mix of masculine and feminine nouns
+- Words should be suitable for French learners to improve everyday vocabulary`;
 
         const response = await fetch(MISTRAL_API_URL, {
             method: 'POST',
