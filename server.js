@@ -24,9 +24,12 @@ app.post('/api/generate-words', async (req, res) => {
 Rules:
 - Only include common, everyday French nouns
 - No proper nouns or names
+- Mix everyday, abstract, rare, and domain-specific nouns.
+- Make the selection unpredictable and balanced.
+- Do not repeat words in the same sample
 - Gender must be exactly "masculine" or "feminine"
 - No explanations, just the 20 JSON objects, one per line
-- Mix of masculine and feminine words
+- Always a Mix of masculine and feminine words
 - Words should be appropriate for language learners`;
 
         const response = await fetch(MISTRAL_API_URL, {
