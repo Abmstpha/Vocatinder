@@ -267,7 +267,7 @@
 </head>
 <body>
   <div class="game-container">
-    <h1> French Gender Swipe by <a href="https://www.linkedin.com/in/abmstpha/" target="_blank" style="color: #333; text-decoration: none;">Abdellahi 🤖</a></h1>
+    <h1> French Gender Swipe by <a href="https://www.linkedin.com/in/abmstpha/" target="_blank" rel="noopener noreferrer">Abdellahi 🤖</a></h1>
     <div id="start-screen">
       <div class="instructions">
         <h3>How to Play:</h3>
@@ -358,12 +358,24 @@
       currentWords = []; currentWordIndex = 0; score = 0; gameActive = false;
       hideAllScreens();
       loadingScreen.style.display = 'block';
-      currentWords = await generateWordsFromServer();
+           try {
+      const fullWordList = await generateWordsFromServer();
+      currentWords = shuffle(fullWordList).slice(0, 30);
+    } catch (err) {
+      return showError("❌ Failed to get words from server. Try again.");
+    }
+
+      currentWords = shuffle(fullWordList).slice(0, 30);
+
       gameActive = true;
       hideAllScreens();
       gameScreen.style.display = 'block';
       displayCurrentWord();
     }
+    function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
 
     function hideAllScreens() {
       startScreen.style.display = 'none';
@@ -417,9 +429,9 @@
       scoreScreen.style.display = 'block';
       finalScore.textContent = `You got ${score} out of 30 correct`;
       let scoreClass = '', message = '';
-      if (score >= 17) {
+      if (score >= 25) {
         scoreClass = 'score-excellent'; message = '🎉 Excellent! You\'re a French gender master!';
-      } else if (score >= 13) {
+      } else if (score >= 20) {
         scoreClass = 'score-good'; message = '👍 Good job! Keep practicing!';
       } else {
         scoreClass = 'score-needs-work'; message = '📚 Keep studying! French genders can be tricky!';
