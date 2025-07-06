@@ -17,7 +17,7 @@ app.use(express.json());
 // API endpoint to generate French words
 app.post('/api/generate-words', async (req, res) => {
     try {
-        const prompt = `Generate exactly 30 common French nouns with their gender. Format each as JSON like this:
+        const prompt = `Generate exactly 100 common French nouns with their gender. Format each as JSON like this:
 {"word": "chambre", "gender": "feminine"}
 {"word": "livre", "gender": "masculine"}
 
