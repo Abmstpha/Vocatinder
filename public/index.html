@@ -276,7 +276,7 @@
     <div id="loading-screen" style="display: none;">
       <div class="loading">
         <div class="spinner"></div>
-        <p>Loading French words from local file...</p>
+        <p>Loading French words for you...</p>
       </div>
     </div>
 
@@ -323,7 +323,7 @@
 
     async function loadLocalWords() {
       const res = await fetch('/words.json');
-      if (!res.ok) throw new Error('Unable to fetch local words.json');
+      if (!res.ok) throw new Error('Unable to fetch words.json');
       const allWords = await res.json();
       return shuffle(allWords).slice(0, 30);
     }
