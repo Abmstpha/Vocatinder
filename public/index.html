@@ -243,25 +243,34 @@
       background: linear-gradient(135deg, #ff9933, #ff6e93);
       box-shadow: 0 4px 14px rgba(0,0,0,0.10);
     }
-    /* Smooth modal pop and responsive fixes */
-    @media (max-width: 600px) {
-      #review-panel {
-        padding: 8px 3vw 14px 3vw;
-        max-width: 99vw;
-        min-width: 0;
-      }
-      .review-card { padding: 10px 3px; }
-      .review-translation { min-width: 40px; font-size: 0.82em;}
-      .review-gender { min-width: 36px; }
-    }
     @media (max-width: 480px) {
-      .game-container { padding: 10px; }
-      h1 { font-size: 1.4em; }
-      .word { font-size: 1.6em; }
-      .translation { font-size: 0.71em; }
-      .word-card { padding: 18px 10px; min-height: 95px; }
-      #review-panel { padding: 5px 1vw 7px 1vw; }
-    }
+  .game-container {
+    padding: 20px;
+    min-width: 320px;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+
+  .word {
+    font-size: 2.5em;
+  }
+
+  .word-card {
+    padding: 40px 20px;
+    min-height: 150px;
+  }
+  #review-panel {
+    padding: 8px 3vw 14px 3vw;
+    max-width: 99vw;
+    min-width: 0;
+  }
+  .review-card { padding: 10px 3px; }
+  .review-translation { min-width: 40px; font-size: 0.82em;}
+  .review-gender { min-width: 36px; }
+}
+
   </style>
 </head>
 <body>
