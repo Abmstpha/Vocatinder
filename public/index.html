@@ -94,138 +94,187 @@
     .error-message { background: #ffebee; border: 1px solid #f44336; color: #c62828; padding: 12px; border-radius: 8px; margin: 20px 0; }
 
     /* --- Overlay + Review Panel Styles --- */
+    /* --- Fixed Modern Overlay + Review Panel Styles --- */
     #review-overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(30,20,60,0.25);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
       z-index: 9999;
-      justify-content: center;
       align-items: center;
-      transition: background 0.25s;
-      animation: fadeIn 0.3s;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
     }
-    @keyframes fadeIn {
-      from { background: rgba(30,20,60,0.00);}
-      to   { background: rgba(30,20,60,0.25);}
+    
+    #review-overlay.show {
+      opacity: 1;
     }
+    
     #review-panel {
       position: relative;
-      margin: 0 auto;
-      width: 96vw;
-      max-width: 410px;
-      max-height: 85vh;
-      background: rgba(255,255,255,0.93);
-      border-radius: 22px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.19);
-      padding: 14px 7vw 18px 7vw;
-      z-index: 1002;
+      width: 90vw;
+      max-width: 500px;
+      max-height: 90vh;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      animation: popIn 0.25s;
-      transition: box-shadow 0.17s;
-      overflow: visible;
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+      outline: none;
     }
+    
+    #review-overlay.show #review-panel {
+      transform: scale(1);
+    }
+    
     .review-close-btn {
-      position: sticky;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(90deg,#a084e8 55%,#764ba2 100%);
-      color: white;
-      font-size: 1em;
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
       border: none;
-      border-radius: 22px;
-      padding: 10px 32px;
-      font-weight: 700;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      font-weight: 600;
       cursor: pointer;
-      margin: 0 auto 12px auto;
-      z-index: 15;
-      display: block;
-      box-shadow: 0 2px 10px rgba(80, 32, 180, 0.13);
-      letter-spacing: .01em;
-      transition: filter 0.12s, background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      z-index: 10000;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
-    .review-close-btn:active { filter: brightness(0.95);}
-    .review-close-btn:hover { background: #8b5cf6; }
+    
+    .review-close-btn:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .review-close-btn:active {
+      transform: scale(0.95);
+    }
+    
     #review-panel h3 {
-      margin-bottom: 10px;
-      color: #222;
-      font-size: 1.16em;
+      margin: 10px 0 20px 0;
+      color: #333;
+      font-size: 1.5em;
       font-weight: 700;
       text-align: center;
-      letter-spacing: 0.01em;
-      opacity: 0.91;
+      letter-spacing: 0.5px;
     }
+    
     .review-history-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       overflow-y: auto;
       scroll-behavior: smooth;
-      padding-bottom: 10px;
-      max-height: 57vh;
+      padding-right: 5px;
+      max-height: calc(90vh - 140px);
       width: 100%;
     }
+    
+    .review-history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .review-history-list::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+    
+    .review-history-list::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+    }
+    
+    .review-history-list::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+    
     .review-card {
       background: white;
-      border-radius: 14px;
-      padding: 11px 8px;
+      border-radius: 16px;
+      padding: 15px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 2.2px solid transparent;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      min-height: 54px;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      min-height: 60px;
       font-size: 1.1em;
-      transition: box-shadow 0.2s;
+      transition: all 0.2s ease;
     }
+    
+    .review-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+    
     .review-card.correct {
       border-color: #4CAF50;
-      background: #e7ffe7;
-      color: #228b22;
+      background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+      color: #2e7d32;
     }
+    
     .review-card.incorrect {
       border-color: #f44336;
-      background: #fff3f3;
+      background: linear-gradient(135deg, #ffebee, #fff3f3);
       color: #c62828;
     }
+    
     .review-word {
-      font-size: 1.15em;
+      font-size: 1.2em;
       font-weight: 700;
       font-style: italic;
       margin-right: 12px;
-      opacity: 0.95;
-      flex: 0 0 37%;
+      flex: 0 0 35%;
       text-align: left;
       color: inherit;
     }
+    
     .review-translation {
       font-size: 0.95em;
-      color: #888;
+      color: rgba(0, 0, 0, 0.6);
       margin-right: 10px;
       min-width: 60px;
       text-align: left;
-      flex: 0 0 28%;
-      opacity: 0.7;
+      flex: 0 0 30%;
       font-weight: 500;
     }
+    
     .review-gender {
       font-size: 1em;
       font-weight: 600;
       margin-right: 6px;
       min-width: 54px;
       text-align: center;
-      opacity: 0.93;
+      opacity: 0.9;
     }
+    
     .review-correctness {
-      font-size: 1.2em;
+      font-size: 1.4em;
       font-weight: bold;
-      min-width: 34px;
+      min-width: 30px;
       text-align: right;
-      filter: drop-shadow(0 1px 1px #fff8);
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
     }
+    
     .review-btn {
       margin-top: 20px;
       margin-right: 14px;
@@ -237,39 +286,85 @@
       font-size: 1em;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s;
+      transition: all 0.2s ease;
     }
+    
     .review-btn:hover {
       background: linear-gradient(135deg, #ff9933, #ff6e93);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
+    
     @media (max-width: 480px) {
-  .game-container {
-    padding: 20px;
-    min-width: 320px;
-  }
+      .game-container {
+        padding: 20px;
+        min-width: 320px;
+      }
 
-  h1 {
-    font-size: 2em;
-  }
+      h1 {
+        font-size: 2em;
+      }
 
-  .word {
-    font-size: 2.5em;
-  }
+      .word {
+        font-size: 2.5em;
+      }
 
-  .word-card {
-    padding: 40px 20px;
-    min-height: 150px;
-  }
-  #review-panel {
-    padding: 8px 3vw 14px 3vw;
-    max-width: 99vw;
-    min-width: 0;
-  }
-  .review-card { padding: 10px 3px; }
-  .review-translation { min-width: 40px; font-size: 0.82em;}
-  .review-gender { min-width: 36px; }
-}
+      .word-card {
+        padding: 40px 20px;
+        min-height: 150px;
+      }
+      
+      #review-panel {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 15px;
+        max-height: 95vh;
+      }
+      
+      .review-close-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+        top: 10px;
+        right: 10px;
+      }
+      
+      #review-panel h3 {
+        font-size: 1.3em;
+        margin: 5px 0 15px 0;
+      }
+      
+      .review-card {
+        padding: 12px 8px;
+        min-height: 55px;
+      }
+      
+      .review-word {
+        font-size: 1.1em;
+        flex: 0 0 40%;
+      }
+      
+      .review-translation {
+        font-size: 0.85em;
+        flex: 0 0 25%;
+        min-width: 40px;
+      }
+      
+      .review-gender {
+        font-size: 0.9em;
+        min-width: 45px;
+      }
+      
+      .review-correctness {
+        font-size: 1.2em;
+        min-width: 25px;
+      }
+      
+      .review-history-list {
+        max-height: calc(95vh - 120px);
+        gap: 8px;
+      }
+    }
 
   </style>
 </head>
@@ -327,7 +422,7 @@
     <!-- REVIEW OVERLAY + PANEL -->
     <div id="review-overlay">
       <div id="review-panel" tabindex="0">
-        <button class="review-close-btn" onclick="closeReviewPanel()">Close Review</button>
+        <button class="review-close-btn" onclick="closeReviewPanel()">×</button>
         <h3>Card Review</h3>
         <div class="review-history-list" id="review-history-list"></div>
       </div>
@@ -483,7 +578,7 @@
       showReviewPanel();
     };
 
-    function showReviewPanel() {
+   function showReviewPanel() {
       // Clear previous
       reviewHistoryList.innerHTML = '';
       history.forEach((item, idx) => {
@@ -497,40 +592,56 @@
         `;
         reviewHistoryList.appendChild(div);
       });
+      
+      // Show overlay with smooth animation
       reviewOverlay.style.display = 'flex';
+      requestAnimationFrame(() => {
+        reviewOverlay.classList.add('show');
+      });
+      
       reviewPanel.focus();
-      document.body.style.overflow = 'hidden'; // prevent scroll background
+      document.body.style.overflow = 'hidden';
     }
 
     function closeReviewPanel() {
-      reviewOverlay.style.display = 'none';
-      document.body.style.overflow = '';
+      reviewOverlay.classList.remove('show');
+      setTimeout(() => {
+        reviewOverlay.style.display = 'none';
+        document.body.style.overflow = '';
+      }, 300);
     }
 
-    // Allow tap/click outside panel to close review
-    reviewOverlay.addEventListener('mousedown', function(e) {
-      if (e.target === reviewOverlay) closeReviewPanel();
-    });
-    reviewOverlay.addEventListener('touchstart', function(e) {
-      if (e.target === reviewOverlay) closeReviewPanel();
-    });
-
-    // ESC key closes modal
-    reviewPanel.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeReviewPanel();
+    // Click outside to close (but not when clicking inside the panel)
+    reviewOverlay.addEventListener('click', function(e) {
+      if (e.target === reviewOverlay) {
+        closeReviewPanel();
+      }
     });
 
-    function hideAllScreens() {
-      [startScreen, loadingScreen, gameScreen, scoreScreen, errorScreen].forEach(el => el.style.display='none');
-      reviewOverlay.style.display = 'none';
-    }
-    function showError(msg) { hideAllScreens(); errorMessage.textContent=msg; errorScreen.style.display='block'; }
+    // ESC key to close
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && reviewOverlay.style.display === 'flex') {
+        closeReviewPanel();
+      }
+    });
 
+    // Game controls
     document.addEventListener('keydown', e => {
       if (!gameActive) return;
       if (e.key==='ArrowLeft') makeGuess('feminine','left');
       if (e.key==='ArrowRight') makeGuess('masculine','right');
     });
+    
+    function hideAllScreens() {
+      [startScreen, loadingScreen, gameScreen, scoreScreen, errorScreen].forEach(el => el.style.display='none');
+      closeReviewPanel();
+    }
+
+        function showError(msg) { 
+      hideAllScreens(); 
+      errorMessage.textContent=msg; 
+      errorScreen.style.display='block'; 
+    }
 
     let touchStartX=0, mouseStartX=0, isDown=false;
     wordCard.addEventListener('touchstart', e=> touchStartX=e.changedTouches[0].screenX);
