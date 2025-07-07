@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>French Gender Swipe</title>
   <style>
-    /* Reset & Base */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    /* Animated Gradient Background */
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea, #764ba2, #ff6a00, #ee0979);
@@ -20,14 +17,11 @@
       align-items: center;
       overflow: hidden;
     }
-
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-
-    /* Container with frosted glass effect */
     .game-container {
       backdrop-filter: blur(12px);
       background: rgba(255, 255, 255, 0.75);
@@ -39,7 +33,6 @@
       max-width: 480px;
       width: 90%;
     }
-
     h1 {
       color: #333;
       margin-bottom: 20px;
@@ -47,8 +40,6 @@
       font-weight: 700;
       letter-spacing: 1px;
     }
-
-    /* Word Card Enhancements */
     .word-card {
       background: white;
       border-radius: 15px;
@@ -64,8 +55,6 @@
       transform-origin: center;
       will-change: transform, opacity;
     }
-
-    /* Pop-in Animation */
     .word-card.pop-in {
       animation: popIn 0.5s ease-out;
     }
@@ -74,26 +63,17 @@
       60% { transform: scale(1.05); opacity: 1; }
       100% { transform: scale(1); opacity: 1; }
     }
-
-    /* Swipe Feedback */
     .word-card.correct { border-color: #4CAF50; background: #E8F5E8; }
     .word-card.incorrect { border-color: #f44336; background: #FFEBEE; }
-
     .word-card.slide-left { animation: slideLeft 0.6s ease forwards; }
     .word-card.slide-right { animation: slideRight 0.6s ease forwards; }
     @keyframes slideLeft { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-120%) rotate(-10deg); opacity: 0; } }
     @keyframes slideRight { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(120%) rotate(10deg); opacity: 0; } }
-
-    /* Word & Translation Styling */
     .word { font-size: 2.8em; font-weight: 600; color: #333; text-transform: lowercase; font-style: italic; }
     .translation { font-size: 0.8em; color: rgba(0, 0, 0, 0.4); margin-top: 6px; text-transform: none; }
-
-    /* Progress Bar */
     .progress { background: #e0e0e0; border-radius: 10px; height: 6px; margin-bottom: 15px; overflow: hidden; }
     .progress-bar { background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; transition: width 0.3s ease; }
     .progress-text { font-size: 0.9em; color: #555; margin-bottom: 20px; }
-
-    /* Buttons */
     .play-again-btn, .start-btn {
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: white;
@@ -108,20 +88,126 @@
     }
     .start-btn { background: linear-gradient(135deg, #4CAF50, #45a049); }
     .play-again-btn:hover, .start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2); }
-
-    /* Hint & Messages */
     .keyboard-hint, .instructions, .api-info, .error-message { font-size: 0.9em; }
     .hint-left { color: #e91e63; font-weight: 600; }
     .hint-right { color: #2196f3; font-weight: 600; }
     .error-message { background: #ffebee; border: 1px solid #f44336; color: #c62828; padding: 12px; border-radius: 8px; margin: 20px 0; }
-
-    /* Responsive Tweaks */
+    /* Review Panel Styles */
+    #review-panel {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.97);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      padding: 22px 16px 16px 16px;
+      z-index: 1002;
+    }
+    #review-panel h3 {
+      margin-bottom: 16px;
+      color: #333;
+      font-size: 1.3em;
+      font-weight: 600;
+    }
+    .review-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .review-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 2px solid transparent;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      min-height: 60px;
+    }
+    .review-card.correct {
+      border-color: #4CAF50;
+      background: #e7ffe7;
+      color: #228b22;
+    }
+    .review-card.incorrect {
+      border-color: #f44336;
+      background: #ffeced;
+      color: #c62828;
+    }
+    .review-word {
+      font-size: 1.3em;
+      font-weight: 600;
+      font-style: italic;
+      margin-right: 12px;
+    }
+    .review-translation {
+      font-size: 0.95em;
+      color: #888;
+      margin-right: 12px;
+      min-width: 80px;
+      text-align: left;
+    }
+    .review-gender {
+      font-size: 1em;
+      font-weight: 500;
+      margin-right: 8px;
+      min-width: 70px;
+      text-align: center;
+    }
+    .review-correctness {
+      font-size: 1.05em;
+      font-weight: bold;
+      min-width: 45px;
+      text-align: right;
+    }
+    .review-close-btn {
+      margin: 18px auto 0 auto;
+      display: block;
+      background: #764ba2;
+      color: white;
+      font-size: 1em;
+      border: none;
+      border-radius: 22px;
+      padding: 10px 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .review-close-btn:hover { background: #8b5cf6; }
+    .review-btn {
+      margin-top: 20px;
+      margin-right: 14px;
+      background: linear-gradient(135deg, #ff6a00, #ee0979);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 22px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .review-btn:hover {
+      background: linear-gradient(135deg, #ff9933, #ff6e93);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+    }
     @media (max-width: 480px) {
       .game-container { padding: 20px; }
       h1 { font-size: 1.8em; }
       .word { font-size: 2.2em; }
       .translation { font-size: 0.75em; }
       .word-card { padding: 30px 20px; min-height: 140px; }
+      #review-panel { padding: 11px 6px 12px 6px; max-width: 98vw; }
+      .review-card { padding: 10px 8px; }
+      .review-translation { min-width: 50px; font-size: 0.82em;}
+      .review-gender { min-width: 50px; }
     }
   </style>
 </head>
@@ -171,8 +257,15 @@
         <h2>Game Complete!</h2>
         <div class="final-score" id="final-score">You got 0 out of 30 correct</div>
         <div id="score-message"></div>
+        <button class="review-btn" id="review-btn" style="display:none;">Review my cards</button>
         <button class="play-again-btn" onclick="startGame()">Play Again</button>
       </div>
+    </div>
+
+    <div id="review-panel" style="display: none;">
+      <h3>Card Review</h3>
+      <div class="review-history-list" id="review-history-list"></div>
+      <button class="review-close-btn" onclick="closeReviewPanel()">Close Review</button>
     </div>
 
     <div id="error-screen" style="display: none;">
@@ -183,6 +276,7 @@
 
   <script>
     let currentWords = [], currentWordIndex = 0, score = 0, gameActive = false;
+    let history = [];
     const startScreen = document.getElementById('start-screen');
     const loadingScreen = document.getElementById('loading-screen');
     const gameScreen = document.getElementById('game-screen');
@@ -196,6 +290,9 @@
     const finalScore = document.getElementById('final-score');
     const scoreMessage = document.getElementById('score-message');
     const errorMessage = document.getElementById('error-message');
+    const reviewBtn = document.getElementById('review-btn');
+    const reviewPanel = document.getElementById('review-panel');
+    const reviewHistoryList = document.getElementById('review-history-list');
 
     async function loadLocalWords() {
       const res = await fetch('/words.json');
@@ -210,6 +307,7 @@
 
     async function startGame() {
       currentWords = []; currentWordIndex = 0; score = 0; gameActive = false;
+      history = [];
       hideAllScreens(); loadingScreen.style.display = 'block';
       try {
         currentWords = await loadLocalWords();
@@ -231,89 +329,120 @@
       wordCard.className = 'word-card';
     }
 
-   function makeGuess(guess, swipeDirection = null) {
-  // Ignore if game not active
-  if (!gameActive) return;
-  // Lock input immediately
-  gameActive = false;
+    function makeGuess(guess, swipeDirection = null) {
+      if (!gameActive) return;
+      gameActive = false;
 
-  // Check correctness
-  const w = currentWords[currentWordIndex];
-  const isCorrect = guess === w.gender;
+      const w = currentWords[currentWordIndex];
+      const isCorrect = guess === w.gender;
 
-  // Choose swipe animation
-  const swipeClass = swipeDirection === 'left'
-    ? 'slide-left'
-    : swipeDirection === 'right'
-      ? 'slide-right'
-      : guess === 'feminine'
+      // PUSH HISTORY
+      history.push({
+        word: w.word,
+        translation: w.translation,
+        gender: w.gender,
+        wasCorrect: isCorrect,
+        guess: guess
+      });
+
+      const swipeClass = swipeDirection === 'left'
         ? 'slide-left'
-        : 'slide-right';
+        : swipeDirection === 'right'
+          ? 'slide-right'
+          : guess === 'feminine'
+            ? 'slide-left'
+            : 'slide-right';
 
-  // Apply visual feedback
-  if (isCorrect) {
-    score++;
-    wordCard.classList.add('correct', swipeClass);
-  } else {
-    wordCard.classList.add('incorrect', swipeClass);
-  }
+      if (isCorrect) {
+        score++;
+        wordCard.classList.add('correct', swipeClass);
+      } else {
+        wordCard.classList.add('incorrect', swipeClass);
+      }
 
-  // After animation, advance or end
-  setTimeout(() => {
-    // Reset card style
-    wordCard.className = 'word-card';
+      setTimeout(() => {
+        wordCard.className = 'word-card';
+        currentWordIndex++;
 
-    // Move to next word
-    currentWordIndex++;
-
-    if (currentWordIndex < currentWords.length) {
-      // Show next and re-enable input
-      displayCurrentWord();
-      gameActive = true;
-    } else {
-      // No more words: finish game
-      endGame();
+        if (currentWordIndex < currentWords.length) {
+          displayCurrentWord();
+          gameActive = true;
+        } else {
+          endGame();
+        }
+      }, 600);
     }
-  }, 600);
-}
-
 
     function endGame() {
-  gameActive = false;
-  hideAllScreens();
-  scoreScreen.style.display = 'block';
+      gameActive = false;
+      hideAllScreens();
+      scoreScreen.style.display = 'block';
 
-  finalScore.textContent = `You got ${score} out of 30 correct`;
+      finalScore.textContent = `You got ${score} out of 30 correct`;
 
-  let cls = '', msg = '';
+      let cls = '', msg = '';
 
-  if (score === 30) {
-    cls = 'score-perfect';
-    msg = '🏆 Perfect score! You’re a gender guru!';
-  } else if (score >= 27) {
-    cls = 'score-excellent';
-    msg = '🎉 Excellent! Almost perfect!';
-  } else if (score >= 23) {
-    cls = 'score-great';
-    msg = '👍 Great job!';
-  } else if (score >= 18) {
-    cls = 'score-good';
-    msg = '🙂 Not bad! Keep practicing!';
-  } else if (score >= 12) {
-    cls = 'score-ok';
-    msg = '🤔 You’re getting there!';
-  } else {
-    cls = 'score-needs-work';
-    msg = '📚 Keep studying—practice makes perfect!';
-  }
+      if (score === 30) {
+        cls = 'score-perfect';
+        msg = '🏆 Perfect score! You’re a gender guru!';
+      } else if (score >= 27) {
+        cls = 'score-excellent';
+        msg = '🎉 Excellent! Almost perfect!';
+      } else if (score >= 23) {
+        cls = 'score-great';
+        msg = '👍 Great job!';
+      } else if (score >= 18) {
+        cls = 'score-good';
+        msg = '🙂 Not bad! Keep practicing!';
+      } else if (score >= 12) {
+        cls = 'score-ok';
+        msg = '🤔 You’re getting there!,  Keep studying';
+      } else {
+        cls = 'score-needs-work';
+        msg = '📚 Keep studying—practice makes perfect!';
+      }
 
-  finalScore.className = `final-score ${cls}`;
-  scoreMessage.textContent = msg;
-}
+      finalScore.className = `final-score ${cls}`;
+      scoreMessage.textContent = msg;
 
+      // Show review button if there is history
+      if (history.length > 0) {
+        reviewBtn.style.display = 'inline-block';
+      } else {
+        reviewBtn.style.display = 'none';
+      }
+    }
+
+    reviewBtn.onclick = function () {
+      showReviewPanel();
+    };
+
+    function showReviewPanel() {
+      // Clear previous
+      reviewHistoryList.innerHTML = '';
+      history.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'review-card ' + (item.wasCorrect ? 'correct' : 'incorrect');
+        div.innerHTML = `
+          <span class="review-word">${item.word}</span>
+          <span class="review-translation">${item.translation || ''}</span>
+          <span class="review-gender">${item.gender === 'feminine' ? 'la (f)' : 'le (m)'}</span>
+          <span class="review-correctness">${item.wasCorrect ? '✔' : '✖'}</span>
+        `;
+        reviewHistoryList.appendChild(div);
+      });
+      reviewPanel.style.display = 'block';
+      document.body.style.overflow = 'hidden'; // prevent scroll background
+    }
+
+    function closeReviewPanel() {
+      reviewPanel.style.display = 'none';
+      document.body.style.overflow = '';
+    }
 
     function hideAllScreens() {
       [startScreen, loadingScreen, gameScreen, scoreScreen, errorScreen].forEach(el => el.style.display='none');
+      reviewPanel.style.display = 'none';
     }
     function showError(msg) { hideAllScreens(); errorMessage.textContent=msg; errorScreen.style.display='block'; }
 
