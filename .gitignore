@@ -1,2 +1,6 @@
 node_modules/
 .env
+
+# Analysis reports (generated files)
+duplicate_analysis_report.txt
+duplicate_words_report.json
