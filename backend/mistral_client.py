@@ -3,8 +3,7 @@ Mistral AI client for enhanced feedback and explanations
 """
 
 import os
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import Mistral
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,8 +14,8 @@ class MistralFeedbackClient:
         if not api_key:
             raise ValueError("MISTRAL_API_KEY not found in environment variables")
         
-        self.client = MistralClient(api_key=api_key)
-        self.model = "mistral-tiny"
+        self.client = Mistral(api_key=api_key)
+        self.model = "mistral-small-latest"
     
     def explain_gender_rule(self, word: str, correct_gender: str) -> str:
         """Get explanation for why a word has a specific gender"""
@@ -25,9 +24,9 @@ class MistralFeedbackClient:
         Respond in English for learning purposes."""
         
         try:
-            response = self.client.chat(
+            response = self.client.chat.complete(
                 model=self.model,
-                messages=[ChatMessage(role="user", content=prompt)],
+                messages=[{"role": "user", "content": prompt}],
                 max_tokens=100,
                 temperature=0.3
             )
@@ -43,9 +42,9 @@ class MistralFeedbackClient:
         Respond in English."""
         
         try:
-            response = self.client.chat(
+            response = self.client.chat.complete(
                 model=self.model,
-                messages=[ChatMessage(role="user", content=prompt)],
+                messages=[{"role": "user", "content": prompt}],
                 max_tokens=120,
                 temperature=0.3
             )
