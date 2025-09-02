@@ -6,20 +6,19 @@ interface GameStatsProps {
 }
 
 const GameStats: React.FC<GameStatsProps> = ({ gameState }) => {
-  const { score, totalRounds, gameComplete, currentRound } = gameState;
-  const accuracy = totalRounds > 0 ? Math.round((score / totalRounds) * 100) : 0;
-  const roundType = currentRound?.round_type === 'word_check' ? 'Round 2' : 'Round 1';
+  const { score, totalRounds, gameComplete, roundsCompleted } = gameState;
+  const accuracy = roundsCompleted > 0 ? Math.round((score / roundsCompleted) * 100) : 0;
 
   return (
     <div className="game-stats">
       <div className="stats-row">
         <div className="stat">
-          <span className="stat-label">Score</span>
-          <span className="stat-value">{score}/{totalRounds}</span>
+          <span className="stat-label">Progress</span>
+          <span className="stat-value">{roundsCompleted}/{totalRounds}</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Current</span>
-          <span className="stat-value">{currentRound ? roundType : 'Ready'}</span>
+          <span className="stat-label">Score</span>
+          <span className="stat-value">{score}</span>
         </div>
         <div className="stat">
           <span className="stat-label">Accuracy</span>

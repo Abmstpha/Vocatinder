@@ -20,6 +20,18 @@ mistral_client = MistralFeedbackClient()
 # Store game sessions in memory (in production, use database)
 game_sessions = {}
 
+# Store game progress for multi-round games
+class GameSession:
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.challenges = []  # List of 10 challenges
+        self.current_challenge_index = 0
+        self.score = 0
+        self.round_type = "sentence_check"  # Current round type
+        self.current_target_noun = None
+        
+active_games = {}
+
 # Pydantic models
 class GameRound(BaseModel):
     round_id: str
@@ -62,59 +74,45 @@ async def serve_frontend():
 
 @app.post("/api/start-game")
 async def start_game() -> GameRound:
-    """Start a new game session with Round 1 (Sentence Check)"""
+    """Start a new game session with 10 challenges"""
     try:
-        # Get fresh news data or use fallback
-        game_data = news_processor.generate_game_data(num_rounds=1)
+        # Generate 10 challenges from fresh news data
+        game_data = news_processor.generate_game_data(num_rounds=10)
         
-        if not game_data:
+        if not game_data or len(game_data) < 10:
             # Use fallback data if scraping fails
-            fallback = random.choice(FALLBACK_SENTENCES)
-            corrupted_sentence, is_correct = news_processor.corrupt_sentence(
-                fallback["original_sentence"], 
-                fallback["target_noun"]
-            )
-            
-            round_id = f"round_{random.randint(1000, 9999)}"
-            
-            # Store session data
-            game_sessions[round_id] = {
-                "original_sentence": fallback["original_sentence"],
-                "target_noun": fallback["target_noun"],
-                "is_correct": is_correct,
-                "round_type": "sentence_check"
-            }
-            
-            return GameRound(
-                round_id=round_id,
-                round_type="sentence_check",
-                display_text=corrupted_sentence,
-                target_word=fallback["target_noun"]["word"],
-                correct_answer=is_correct,
-                options={
-                    "left": "Incorrect Grammar",
-                    "right": "Correct Grammar"
-                }
-            )
+            challenges = []
+            for i in range(10):
+                fallback = random.choice(FALLBACK_SENTENCES)
+                corrupted_sentence, is_correct = news_processor.corrupt_sentence(
+                    fallback["original_sentence"], 
+                    fallback["target_noun"]
+                )
+                challenges.append({
+                    "original_sentence": fallback["original_sentence"],
+                    "display_sentence": corrupted_sentence,
+                    "target_noun": fallback["target_noun"],
+                    "is_correct": is_correct
+                })
+        else:
+            challenges = game_data[:10]
         
-        # Use scraped data
-        round_data = game_data[0]
-        round_id = f"round_{random.randint(1000, 9999)}"
+        # Create new game session
+        session_id = f"game_{random.randint(10000, 99999)}"
+        game_session = GameSession(session_id)
+        game_session.challenges = challenges
+        active_games[session_id] = game_session
         
-        # Store session data
-        game_sessions[round_id] = {
-            "original_sentence": round_data["original_sentence"],
-            "target_noun": round_data["target_noun"],
-            "is_correct": round_data["is_correct"],
-            "round_type": "sentence_check"
-        }
+        # Return first challenge
+        first_challenge = challenges[0]
+        round_id = f"{session_id}_challenge_0"
         
         return GameRound(
             round_id=round_id,
             round_type="sentence_check",
-            display_text=round_data["display_sentence"],
-            target_word=round_data["target_noun"]["word"],
-            correct_answer=round_data["is_correct"],
+            display_text=first_challenge["display_sentence"],
+            target_word=first_challenge["target_noun"]["word"],
+            correct_answer=first_challenge["is_correct"],
             options={
                 "left": "Incorrect Grammar",
                 "right": "Correct Grammar"
@@ -128,89 +126,136 @@ async def start_game() -> GameRound:
 async def submit_answer(answer: UserAnswer) -> FeedbackResponse:
     """Submit user answer and get feedback + next round"""
     try:
-        # Get stored game session
-        session = game_sessions.get(answer.round_id)
-        if not session:
+        # Parse round_id to get session and challenge info
+        if "_challenge_" in answer.round_id:
+            session_id, challenge_part = answer.round_id.split("_challenge_")
+            challenge_index = int(challenge_part)
+            round_type = "sentence_check"
+        elif "_word_" in answer.round_id:
+            session_id, word_part = answer.round_id.split("_word_")
+            challenge_index = int(word_part)
+            round_type = "word_check"
+        else:
+            raise HTTPException(status_code=400, detail="Invalid round ID format")
+        
+        game_session = active_games.get(session_id)
+        if not game_session:
             raise HTTPException(status_code=404, detail="Game session not found")
         
-        # Check user's answer
-        user_correct = (answer.user_choice == "right" and session["is_correct"]) or \
-                      (answer.user_choice == "left" and not session["is_correct"])
+        current_challenge = game_session.challenges[challenge_index]
         
-        if session["round_type"] == "sentence_check":
+        if round_type == "sentence_check":
+            user_correct = (answer.user_choice == "right" and current_challenge["is_correct"]) or \
+                          (answer.user_choice == "left" and not current_challenge["is_correct"])
+            
             if user_correct:
-                # User got Round 1 correct - proceed to Round 2 (Word Check)
-                target_noun = session["target_noun"]
-                target_word = target_noun["word"]
-                correct_gender = target_noun["gender"]
-                
-                # Get Mistral explanation for the word's gender
-                explanation = mistral_client.explain_gender_rule(target_word, correct_gender)
-                
-                # Create Round 2
-                round2_id = f"word_{random.randint(1000, 9999)}"
-                game_sessions[round2_id] = {
-                    "target_word": target_word,
-                    "correct_gender": correct_gender,
-                    "round_type": "word_check"
-                }
-                
-                next_round = GameRound(
-                    round_id=round2_id,
-                    round_type="word_check",
-                    display_text=target_word,
-                    target_word=target_word,
-                    correct_answer=(correct_gender == "masculine"),
-                    options={
-                        "left": "Feminine (LA)",
-                        "right": "Masculine (LE)"
-                    }
-                )
-                
-                return FeedbackResponse(
-                    is_correct=True,
-                    explanation=f"Correct! Now identify the gender of '{target_word}': {explanation}",
-                    correct_answer="Correct grammar",
-                    next_round=next_round
-                )
+                game_session.score += 1
+            
+            # Always proceed to Round 2 (Word Check) regardless of Round 1 result
+            target_noun = current_challenge["target_noun"]
+            target_word = target_noun["word"]
+            correct_gender = target_noun["gender"]
+            
+            # Get appropriate explanation
+            if user_correct:
+                explanation = f"Correct! Now identify the gender of '{target_word}'"
             else:
-                # User got Round 1 wrong - explain the grammar error
                 explanation = mistral_client.explain_sentence_error(
-                    session["original_sentence"],
-                    session["target_noun"]["word"],
-                    session["target_noun"]["gender"]
+                    current_challenge["original_sentence"],
+                    current_challenge["target_noun"]["word"],
+                    current_challenge["target_noun"]["gender"]
                 )
-                
-                return FeedbackResponse(
-                    is_correct=False,
-                    explanation=explanation,
-                    correct_answer=f"The correct sentence: {session['original_sentence']}",
-                    next_round=None
-                )
+                explanation += f" Now identify the gender of '{target_word}'"
+            
+            word_round_id = f"{session_id}_word_{challenge_index}"
+            
+            next_round = GameRound(
+                round_id=word_round_id,
+                round_type="word_check",
+                display_text=target_word,
+                target_word=target_word,
+                correct_answer=(correct_gender == "masculine"),
+                options={
+                    "left": "Feminine (LA)",
+                    "right": "Masculine (LE)"
+                }
+            )
+            
+            return FeedbackResponse(
+                is_correct=user_correct,
+                explanation=explanation,
+                correct_answer="Correct grammar" if user_correct else f"Correct: {current_challenge['original_sentence']}",
+                next_round=next_round
+            )
         
-        elif session["round_type"] == "word_check":
-            # Round 2: Check if user identified gender correctly
-            correct_gender = session["correct_gender"]
+        elif round_type == "word_check":
+            # Check gender answer
+            target_noun = current_challenge["target_noun"]
+            correct_gender = target_noun["gender"]
             user_gender_correct = (answer.user_choice == "right" and correct_gender == "masculine") or \
                                  (answer.user_choice == "left" and correct_gender == "feminine")
             
             if user_gender_correct:
-                explanation = f"Excellent! '{session['target_word']}' is indeed {correct_gender}."
+                game_session.score += 1
+                explanation = f"Excellent! '{target_noun['word']}' is indeed {correct_gender}."
             else:
                 explanation = mistral_client.explain_gender_rule(
-                    session["target_word"], 
+                    target_noun["word"], 
                     correct_gender
                 )
+            
+            # Move to next challenge
+            game_session.current_challenge_index += 1
+            
+            if game_session.current_challenge_index >= len(game_session.challenges):
+                # Game complete
+                return FeedbackResponse(
+                    is_correct=user_gender_correct,
+                    explanation=explanation,
+                    correct_answer=f"'{target_noun['word']}' is {correct_gender}",
+                    next_round=None
+                )
+            
+            # Next challenge
+            next_challenge = game_session.challenges[game_session.current_challenge_index]
+            next_round_id = f"{session_id}_challenge_{game_session.current_challenge_index}"
+            
+            next_round = GameRound(
+                round_id=next_round_id,
+                round_type="sentence_check",
+                display_text=next_challenge["display_sentence"],
+                target_word=next_challenge["target_noun"]["word"],
+                correct_answer=next_challenge["is_correct"],
+                options={
+                    "left": "Incorrect Grammar",
+                    "right": "Correct Grammar"
+                }
+            )
             
             return FeedbackResponse(
                 is_correct=user_gender_correct,
                 explanation=explanation,
-                correct_answer=f"'{session['target_word']}' is {correct_gender}",
-                next_round=None  # Game complete
+                correct_answer=f"'{target_noun['word']}' is {correct_gender}",
+                next_round=next_round
             )
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process answer: {str(e)}")
+
+@app.get("/api/game-status/{session_id}")
+async def get_game_status(session_id: str):
+    """Get current game progress"""
+    game_session = active_games.get(session_id)
+    if not game_session:
+        raise HTTPException(status_code=404, detail="Game session not found")
+    
+    return {
+        "session_id": session_id,
+        "current_challenge": game_session.current_challenge_index + 1,
+        "total_challenges": len(game_session.challenges),
+        "score": game_session.score,
+        "progress_percentage": round((game_session.current_challenge_index / len(game_session.challenges)) * 100)
+    }
 
 @app.get("/health")
 async def health_check():

@@ -9,7 +9,7 @@ const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     currentRound: null,
     score: 0,
-    totalRounds: 0,
+    totalRounds: 10,
     gameComplete: false,
     roundsCompleted: 0,
     showFeedback: false
@@ -36,7 +36,7 @@ const App: React.FC = () => {
       setGameState({
         currentRound: gameRound,
         score: 0,
-        totalRounds: 1,
+        totalRounds: 10,
         gameComplete: false,
         roundsCompleted: 0,
         showFeedback: false
@@ -76,13 +76,11 @@ const App: React.FC = () => {
       
       setGameState(prev => ({
         ...prev,
-        score: feedback.is_correct ? prev.score + 1 : prev.score,
-        totalRounds: prev.totalRounds + 1,
         showFeedback: true,
         lastFeedback: feedback,
         currentRound: feedback.next_round || null,
         gameComplete: !feedback.next_round,
-        roundsCompleted: prev.roundsCompleted + 1
+        roundsCompleted: feedback.next_round ? prev.roundsCompleted : prev.roundsCompleted + 1
       }));
 
     } catch (err) {

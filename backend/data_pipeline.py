@@ -3,11 +3,14 @@ Data pipeline for scraping French news headlines and processing them for the gam
 """
 
 import feedparser
-import requests
-from bs4 import BeautifulSoup
 import spacy
 import random
+import requests
+import feedparser
+from bs4 import BeautifulSoup
 from typing import List, Dict, Tuple
+from langchain_agent import FrenchGrammarAgent
+import os
 import json
 from pathlib import Path
 
@@ -18,7 +21,21 @@ class FrenchNewsProcessor:
             self.nlp = spacy.load("fr_core_news_sm")
         except OSError:
             print("⚠️  French spaCy model not found. Run: python -m spacy download fr_core_news_sm")
-            self.nlp = None
+            raise
+        
+        # Initialize LangChain ReAct agent
+        api_key = os.getenv("MISTRAL_API_KEY")
+        if api_key:
+            try:
+                self.grammar_agent = FrenchGrammarAgent(api_key)
+                self.use_agent = True
+                print("✅ LangChain ReAct agent initialized with Mistral")
+            except Exception as e:
+                print(f"⚠️  Failed to initialize LangChain agent: {e}")
+                self.use_agent = False
+        else:
+            print("⚠️  MISTRAL_API_KEY not found, using fallback logic")
+            self.use_agent = False
     
     def scrape_french_news_rss(self) -> List[str]:
         """Scrape French news headlines from RSS feeds"""
@@ -120,20 +137,73 @@ class FrenchNewsProcessor:
         """Generate game data with corrupted and correct sentences"""
         headlines = self.scrape_french_news_rss()
         game_data = []
+        used_headlines = set()
         
-        for headline in headlines[:num_rounds]:
-            nouns = self.extract_nouns_with_gender(headline)
-            if nouns:
-                target_noun = random.choice(nouns)
-                corrupted_sentence, is_correct = self.corrupt_sentence(headline, target_noun)
+        # Ensure we get enough unique headlines
+        while len(game_data) < num_rounds and len(used_headlines) < len(headlines):
+            for headline in headlines:
+                if len(game_data) >= num_rounds:
+                    break
+                    
+                # Skip if already used
+                if headline in used_headlines:
+                    continue
+                    
+                used_headlines.add(headline)
+                nouns = self.extract_nouns_with_gender(headline)
                 
-                game_data.append({
-                    "original_sentence": headline,
-                    "display_sentence": corrupted_sentence,
-                    "target_noun": target_noun,
-                    "is_correct": is_correct,
-                    "round_type": "sentence_check"
-                })
+                if nouns:
+                    # Use LangChain ReAct agent for intelligent word selection
+                    if self.use_agent:
+                        try:
+                            target_noun = self.grammar_agent.intelligent_word_selection(headline)
+                            corrupted_sentence, is_correct = self.grammar_agent.intelligent_sentence_restructuring(headline, target_noun)
+                        except Exception as e:
+                            print(f"Agent failed, using fallback: {e}")
+                            target_noun = random.choice(nouns)
+                            corrupted_sentence, is_correct = self.corrupt_sentence(headline, target_noun)
+                    else:
+                        target_noun = random.choice(nouns)
+                        corrupted_sentence, is_correct = self.corrupt_sentence(headline, target_noun)
+                    
+                    game_data.append({
+                        "original_sentence": headline,
+                        "display_sentence": corrupted_sentence,
+                        "target_noun": target_noun,
+                        "is_correct": is_correct,
+                        "round_type": "sentence_check"
+                    })
+        
+        # If still not enough, scrape more feeds or use variations
+        if len(game_data) < num_rounds:
+            # Re-scrape to get fresh headlines
+            fresh_headlines = self.scrape_french_news_rss()
+            for headline in fresh_headlines:
+                if len(game_data) >= num_rounds:
+                    break
+                if headline not in used_headlines:
+                    nouns = self.extract_nouns_with_gender(headline)
+                    if nouns:
+                        # Use LangChain ReAct agent for intelligent word selection
+                        if self.use_agent:
+                            try:
+                                target_noun = self.grammar_agent.intelligent_word_selection(headline)
+                                corrupted_sentence, is_correct = self.grammar_agent.intelligent_sentence_restructuring(headline, target_noun)
+                            except Exception as e:
+                                print(f"Agent failed, using fallback: {e}")
+                                target_noun = random.choice(nouns)
+                                corrupted_sentence, is_correct = self.corrupt_sentence(headline, target_noun)
+                        else:
+                            target_noun = random.choice(nouns)
+                            corrupted_sentence, is_correct = self.corrupt_sentence(headline, target_noun)
+                        
+                        game_data.append({
+                            "original_sentence": headline,
+                            "display_sentence": corrupted_sentence,
+                            "target_noun": target_noun,
+                            "is_correct": is_correct,
+                            "round_type": "sentence_check"
+                        })
         
         return game_data
 

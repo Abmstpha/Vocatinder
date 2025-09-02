@@ -93,16 +93,16 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ gameRound, onSwipe }) => {
 
   // Keyboard support
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
         onSwipe('left');
-      } else if (e.key === 'ArrowRight') {
+      } else if (event.key === 'ArrowRight') {
         onSwipe('right');
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, [onSwipe]);
 
   // Mouse move/up events on document for smooth dragging
@@ -126,7 +126,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ gameRound, onSwipe }) => {
       document.removeEventListener('mousemove', handleDocumentMouseMove);
       document.removeEventListener('mouseup', handleDocumentMouseUp);
     };
-  }, []);
+  }, [handleEnd]);
 
   return (
     <div className="swipe-container">
