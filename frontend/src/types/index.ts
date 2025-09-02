@@ -1,19 +1,34 @@
-export interface Word {
-  word: string;
-  gender: 'masculine' | 'feminine';
-  article: 'le' | 'la';
-  translation?: string;
+export interface GameRound {
+  round_id: string;
+  round_type: 'sentence_check' | 'word_check';
+  display_text: string;
+  target_word: string;
+  correct_answer: boolean;
+  options: {
+    left: string;
+    right: string;
+  };
 }
 
-export interface ApiResponse {
-  words: Word[];
+export interface UserAnswer {
+  round_id: string;
+  user_choice: 'left' | 'right';
+}
+
+export interface FeedbackResponse {
+  is_correct: boolean;
+  explanation: string;
+  correct_answer: string;
+  next_round?: GameRound;
 }
 
 export interface GameState {
-  currentWordIndex: number;
+  currentRound?: GameRound;
   score: number;
-  totalWords: number;
+  totalRounds: number;
   gameComplete: boolean;
+  showFeedback: boolean;
+  lastFeedback?: FeedbackResponse;
 }
 
 export type SwipeDirection = 'left' | 'right';

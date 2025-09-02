@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import SwipeCard from './components/SwipeCard';
 import GameStats from './components/GameStats';
-import { Word, GameState, ApiResponse } from './types';
+import FeedbackModal from './components/FeedbackModal';
+import { GameRound, GameState, FeedbackResponse, UserAnswer } from './types';
 import './App.css';
 
 const App: React.FC = () => {
-  const [words, setWords] = useState<Word[]>([]);
   const [gameState, setGameState] = useState<GameState>({
-    currentWordIndex: 0,
     score: 0,
-    totalWords: 0,
-    gameComplete: false
+    totalRounds: 0,
+    gameComplete: false,
+    showFeedback: false
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
-  // Fetch words from FastAPI backend
-  const fetchWords = async () => {
+  // Start new game
+  const startGame = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/generate-words', {
+      const response = await fetch('/api/start-game', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,56 +30,85 @@ const App: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: ApiResponse = await response.json();
-      setWords(data.words);
+      const gameRound: GameRound = await response.json();
       setGameState({
-        currentWordIndex: 0,
+        currentRound: gameRound,
         score: 0,
-        totalWords: data.words.length,
-        gameComplete: false
+        totalRounds: 1,
+        gameComplete: false,
+        showFeedback: false
       });
       setError('');
     } catch (err) {
-      setError('Failed to fetch words. Make sure the backend is running!');
-      console.error('Error fetching words:', err);
+      setError('Failed to start game. Make sure the backend is running!');
+      console.error('Error starting game:', err);
     } finally {
       setLoading(false);
     }
   };
 
   // Handle swipe action
-  const handleSwipe = (direction: 'left' | 'right') => {
-    const currentWord = words[gameState.currentWordIndex];
-    const isCorrect = 
-      (direction === 'left' && currentWord.gender === 'feminine') ||
-      (direction === 'right' && currentWord.gender === 'masculine');
+  const handleSwipe = async (direction: 'left' | 'right') => {
+    if (!gameState.currentRound) return;
 
-    const newScore = isCorrect ? gameState.score + 1 : gameState.score;
-    const nextIndex = gameState.currentWordIndex + 1;
-    const isGameComplete = nextIndex >= gameState.totalWords;
+    try {
+      const answer: UserAnswer = {
+        round_id: gameState.currentRound.round_id,
+        user_choice: direction
+      };
 
-    setGameState({
-      currentWordIndex: nextIndex,
-      score: newScore,
-      totalWords: gameState.totalWords,
-      gameComplete: isGameComplete
-    });
+      const response = await fetch('/api/submit-answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(answer)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const feedback: FeedbackResponse = await response.json();
+      
+      setGameState(prev => ({
+        ...prev,
+        score: feedback.is_correct ? prev.score + 1 : prev.score,
+        totalRounds: prev.totalRounds + 1,
+        showFeedback: true,
+        lastFeedback: feedback,
+        currentRound: feedback.next_round,
+        gameComplete: !feedback.next_round
+      }));
+
+    } catch (err) {
+      setError('Failed to submit answer');
+      console.error('Error submitting answer:', err);
+    }
   };
 
-  // Reset game
-  const resetGame = () => {
-    fetchWords();
+  // Continue to next round or restart
+  const handleContinue = () => {
+    if (gameState.lastFeedback?.next_round) {
+      setGameState(prev => ({
+        ...prev,
+        showFeedback: false,
+        currentRound: prev.lastFeedback?.next_round
+      }));
+    } else {
+      startGame(); // Start new game
+    }
   };
 
   useEffect(() => {
-    fetchWords();
+    startGame();
   }, []);
 
   if (loading) {
     return (
       <div className="app">
         <div className="loading">
-          <h2>🇫🇷 Loading French words...</h2>
+          <h2>🇫🇷 Loading VocaTinder...</h2>
         </div>
       </div>
     );
@@ -91,7 +120,7 @@ const App: React.FC = () => {
         <div className="error">
           <h2>❌ Error</h2>
           <p>{error}</p>
-          <button onClick={fetchWords} className="retry-btn">
+          <button onClick={startGame} className="retry-btn">
             Try Again
           </button>
         </div>
@@ -102,24 +131,29 @@ const App: React.FC = () => {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🇫🇷 Vocatinder</h1>
-        <p>Swipe to learn French gender!</p>
+        <h1>🇫🇷 VocaTinder</h1>
+        <p>Learn French gender with real news headlines!</p>
       </header>
 
       <GameStats gameState={gameState} />
 
       <main className="game-area">
-        {!gameState.gameComplete && words.length > 0 ? (
+        {gameState.showFeedback && gameState.lastFeedback ? (
+          <FeedbackModal 
+            feedback={gameState.lastFeedback}
+            onContinue={handleContinue}
+          />
+        ) : gameState.currentRound ? (
           <SwipeCard 
-            word={words[gameState.currentWordIndex]}
+            gameRound={gameState.currentRound}
             onSwipe={handleSwipe}
           />
         ) : (
           <div className="game-complete">
             <h2>🎉 Félicitations!</h2>
-            <p>You completed the game!</p>
-            <button onClick={resetGame} className="play-again-btn">
-              Play Again
+            <p>Ready to start learning?</p>
+            <button onClick={startGame} className="play-again-btn">
+              Start Game
             </button>
           </div>
         )}

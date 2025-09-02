@@ -2,12 +2,39 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 import json
 import random
 import os
 from pathlib import Path
+from data_pipeline import FrenchNewsProcessor, FALLBACK_SENTENCES
+from mistral_client import MistralFeedbackClient
+from typing import List, Dict, Optional
 
-app = FastAPI(title="French Gender Swipe API", version="1.0.0")
+app = FastAPI(title="VocaTinder - French Gender Learning API", version="2.0.0")
+
+# Initialize processors
+news_processor = FrenchNewsProcessor()
+mistral_client = MistralFeedbackClient()
+
+# Pydantic models
+class GameRound(BaseModel):
+    round_id: str
+    round_type: str  # "sentence_check" or "word_check"
+    display_text: str
+    target_word: str
+    correct_answer: bool
+    options: Dict[str, str]
+
+class UserAnswer(BaseModel):
+    round_id: str
+    user_choice: str  # "left" or "right"
+    
+class FeedbackResponse(BaseModel):
+    is_correct: bool
+    explanation: str
+    correct_answer: str
+    next_round: Optional[GameRound]
 
 # Enable CORS for frontend communication
 app.add_middleware(
@@ -30,31 +57,98 @@ async def serve_frontend():
     frontend_path = Path(__file__).parent.parent / "frontend" / "index.html"
     return FileResponse(frontend_path)
 
-@app.post("/api/generate-words")
-async def generate_words():
-    """Generate a random sample of 30 words from the words.json file"""
+@app.post("/api/start-game")
+async def start_game() -> GameRound:
+    """Start a new game session with Round 1 (Sentence Check)"""
     try:
-        if not WORDS_PATH.exists():
-            raise HTTPException(status_code=404, detail="Words file not found")
+        # Try to get fresh news data, fallback to static data
+        game_data = news_processor.generate_game_data(num_rounds=1)
         
-        with open(WORDS_PATH, 'r', encoding='utf-8') as file:
-            all_words = json.load(file)
-        
-        if not isinstance(all_words, list) or len(all_words) < 30:
-            raise HTTPException(
-                status_code=400, 
-                detail="words.json must contain at least 30 words"
+        if not game_data:
+            # Use fallback data if scraping fails
+            fallback = random.choice(FALLBACK_SENTENCES)
+            corrupted_sentence, is_correct = news_processor.corrupt_sentence(
+                fallback["original_sentence"], 
+                fallback["target_noun"]
+            )
+            
+            return GameRound(
+                round_id=f"round_{random.randint(1000, 9999)}",
+                round_type="sentence_check",
+                display_text=corrupted_sentence,
+                target_word=fallback["target_noun"]["word"],
+                correct_answer=is_correct,
+                options={
+                    "left": "Incorrect Grammar",
+                    "right": "Correct Grammar"
+                }
             )
         
-        # Shuffle and select 30 random words
-        selected_words = random.sample(all_words, 30)
+        round_data = game_data[0]
+        return GameRound(
+            round_id=f"round_{random.randint(1000, 9999)}",
+            round_type="sentence_check",
+            display_text=round_data["display_sentence"],
+            target_word=round_data["target_noun"]["word"],
+            correct_answer=round_data["is_correct"],
+            options={
+                "left": "Incorrect Grammar",
+                "right": "Correct Grammar"
+            }
+        )
         
-        return {"words": selected_words}
-    
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Invalid JSON format in words file")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load words: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate game: {str(e)}")
+
+@app.post("/api/submit-answer")
+async def submit_answer(answer: UserAnswer) -> FeedbackResponse:
+    """Submit user answer and get feedback + next round"""
+    try:
+        # For demo purposes, we'll simulate the game logic
+        # In a real app, you'd store game state in a database
+        
+        # Simulate Round 1 -> Round 2 progression
+        is_round1_correct = random.choice([True, False])  # Simulate answer checking
+        
+        if is_round1_correct:
+            # Generate Round 2 (Word Check)
+            target_word = "maison"  # Example word
+            correct_gender = "feminine"
+            
+            explanation = mistral_client.explain_gender_rule(target_word, correct_gender)
+            
+            next_round = GameRound(
+                round_id=f"round_{random.randint(1000, 9999)}",
+                round_type="word_check",
+                display_text=target_word,
+                target_word=target_word,
+                correct_answer=True,  # Will be determined by user's swipe
+                options={
+                    "left": "Feminine (LA)",
+                    "right": "Masculine (LE)"
+                }
+            )
+            
+            return FeedbackResponse(
+                is_correct=True,
+                explanation="Correct! Now identify the gender of this word:",
+                correct_answer="Correct grammar",
+                next_round=next_round
+            )
+        else:
+            explanation = mistral_client.explain_sentence_error(
+                "Example sentence", "example word", "feminine"
+            )
+            
+            return FeedbackResponse(
+                is_correct=False,
+                explanation=explanation,
+                correct_answer="The sentence had incorrect gender agreement",
+                next_round=None
+            )
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process answer: {str(e)}")
 
 @app.get("/health")
 async def health_check():

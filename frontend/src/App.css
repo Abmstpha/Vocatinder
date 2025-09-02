@@ -7,6 +7,106 @@
   padding: 20px;
 }
 
+/* Round type indicator */
+.round-type {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Sentence display for Round 1 */
+.sentence-display {
+  text-align: center;
+}
+
+.french-sentence {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  margin-bottom: 15px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.target-word {
+  font-size: 1rem;
+  color: #f39c12;
+  margin-bottom: 20px;
+}
+
+/* Feedback modal */
+.feedback-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.feedback-content {
+  background: white;
+  color: #333;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.feedback-result {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.feedback-result.correct {
+  color: #27ae60;
+}
+
+.feedback-result.incorrect {
+  color: #e74c3c;
+}
+
+.feedback-explanation {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.correct-answer {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  font-size: 1rem;
+}
+
+.continue-btn {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.continue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
 .app-header {
   text-align: center;
   margin-bottom: 30px;
