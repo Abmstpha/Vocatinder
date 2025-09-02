@@ -18,11 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Get the path to the words.json file in the frontend folder
-WORDS_PATH = Path(__file__).parent.parent / "frontend" / "words.json"
+# Get the path to the words.json file in the backend folder
+WORDS_PATH = Path(__file__).parent / "words.json"
 
-# Mount static files from frontend folder
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+# Mount static files from React build folder (will be created after npm run build)
+# For development, React runs on port 3000, FastAPI on port 8000
 
 @app.get("/")
 async def serve_frontend():
