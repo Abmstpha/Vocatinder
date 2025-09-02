@@ -157,7 +157,16 @@ const App: React.FC = () => {
           onSwipe={handleSwipe}
         />
       ) : levelSelected ? (
-        <button onClick={startGame} className="start-button">
+        <button 
+          onClick={startGame} 
+          className="start-button"
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}
+        >
           {gameState.gameComplete ? 'Play Again' : 'Start Game'}
         </button>
       ) : null}

@@ -33,27 +33,47 @@ const LevelSelector: React.FC<LevelSelectorProps> = ({
 
   const currentIndex = levels.findIndex(level => level.value === selectedLevel);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const handleContainerKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
     
-    if (event.key === 'ArrowUp') {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault();
-      const newIndex = currentIndex > 0 ? currentIndex - 1 : levels.length - 1;
-      onLevelChange(levels[newIndex].value);
-    } else if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      const newIndex = currentIndex < levels.length - 1 ? currentIndex + 1 : 0;
-      onLevelChange(levels[newIndex].value);
+      event.stopPropagation();
+      
+      if (event.key === 'ArrowUp') {
+        const newIndex = currentIndex > 0 ? currentIndex - 1 : levels.length - 1;
+        onLevelChange(levels[newIndex].value);
+      } else if (event.key === 'ArrowDown') {
+        const newIndex = currentIndex < levels.length - 1 ? currentIndex + 1 : 0;
+        onLevelChange(levels[newIndex].value);
+      }
     }
   };
 
+  const handleButtonKeyDown = (event: React.KeyboardEvent) => {
+    // Completely block all arrow keys on buttons
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
+  // Focus the container when component mounts so it can receive keyboard events
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, disabled]);
+    if (containerRef.current) {
+      containerRef.current.focus();
+    }
+  }, []);
 
   return (
-    <div className="level-selector">
+    <div 
+      className="level-selector"
+      ref={containerRef}
+      onKeyDown={handleContainerKeyDown}
+      tabIndex={0}
+    >
       <h3>Choose Your Level</h3>
       <p className="keyboard-hint">Use ↑↓ arrow keys to navigate</p>
       <div className="level-options">
@@ -62,7 +82,9 @@ const LevelSelector: React.FC<LevelSelectorProps> = ({
             key={level.value}
             className={`level-option ${selectedLevel === level.value ? 'selected' : ''}`}
             onClick={() => onLevelChange(level.value)}
+            onKeyDown={handleButtonKeyDown}
             disabled={disabled}
+            tabIndex={-1}
           >
             <div className="level-label">{level.label}</div>
             <div className="level-description">{level.description}</div>

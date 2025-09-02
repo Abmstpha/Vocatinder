@@ -8,6 +8,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   max-width: 600px;
   width: 100%;
+  outline: none;
 }
 
 .level-selector h3 {
@@ -60,6 +61,32 @@
   box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
   transform: translateY(-2px);
   color: #222;
+  position: relative;
+}
+
+.level-option.selected::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: linear-gradient(45deg, #ff6b35, #f39c12, #ff6b35, #f39c12);
+  background-size: 400% 400%;
+  border-radius: 25px;
+  z-index: -1;
+  animation: flashingGradient 1.5s ease-in-out infinite;
+}
+
+@keyframes flashingGradient {
+  0%, 100% {
+    background-position: 0% 50%;
+    opacity: 0.8;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 1;
+  }
 }
 
 .level-option:disabled {
