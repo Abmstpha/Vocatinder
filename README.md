@@ -9,11 +9,16 @@ Vocatinder/
 ├── backend/          # FastAPI Python backend
 │   ├── main.py       # FastAPI server
 │   ├── requirements.txt
-│   └── .env          # API keys
-├── frontend/         # Static frontend files
-│   ├── index.html    # Main UI
 │   ├── words.json    # French words database
-│   └── server.js     # Old Node.js server (deprecated)
+│   └── .env          # API keys
+├── frontend/         # React TypeScript frontend
+│   ├── public/       # React public assets
+│   ├── src/          # React source code
+│   │   ├── components/
+│   │   ├── types/
+│   │   └── App.tsx
+│   ├── package.json
+│   └── tsconfig.json
 └── README.md
 ```
 
@@ -26,8 +31,16 @@ pip install -r requirements.txt
 python main.py
 ```
 
+### Frontend (React TypeScript)
+```bash
+cd frontend
+npm install
+npm start
+```
+
 ### Access the app
-- Frontend: http://localhost:8000
+- React frontend: http://localhost:3000
+- FastAPI backend: http://localhost:8000
 - API docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
 
