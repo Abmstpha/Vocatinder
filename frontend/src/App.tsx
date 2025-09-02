@@ -7,9 +7,11 @@ import './App.css';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
+    currentRound: null,
     score: 0,
     totalRounds: 0,
     gameComplete: false,
+    roundsCompleted: 0,
     showFeedback: false
   });
   const [loading, setLoading] = useState<boolean>(true);
@@ -36,6 +38,7 @@ const App: React.FC = () => {
         score: 0,
         totalRounds: 1,
         gameComplete: false,
+        roundsCompleted: 0,
         showFeedback: false
       });
       setError('');
@@ -77,8 +80,9 @@ const App: React.FC = () => {
         totalRounds: prev.totalRounds + 1,
         showFeedback: true,
         lastFeedback: feedback,
-        currentRound: feedback.next_round,
-        gameComplete: !feedback.next_round
+        currentRound: feedback.next_round || null,
+        gameComplete: !feedback.next_round,
+        roundsCompleted: prev.roundsCompleted + 1
       }));
 
     } catch (err) {
@@ -93,7 +97,7 @@ const App: React.FC = () => {
       setGameState(prev => ({
         ...prev,
         showFeedback: false,
-        currentRound: prev.lastFeedback?.next_round
+        currentRound: prev.lastFeedback?.next_round || null
       }));
     } else {
       startGame(); // Start new game

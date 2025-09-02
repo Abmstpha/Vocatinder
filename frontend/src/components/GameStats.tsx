@@ -6,19 +6,20 @@ interface GameStatsProps {
 }
 
 const GameStats: React.FC<GameStatsProps> = ({ gameState }) => {
-  const { currentWordIndex, score, totalWords, gameComplete } = gameState;
-  const accuracy = totalWords > 0 ? Math.round((score / totalWords) * 100) : 0;
+  const { score, totalRounds, gameComplete, currentRound } = gameState;
+  const accuracy = totalRounds > 0 ? Math.round((score / totalRounds) * 100) : 0;
+  const roundType = currentRound?.round_type === 'word_check' ? 'Round 2' : 'Round 1';
 
   return (
     <div className="game-stats">
       <div className="stats-row">
         <div className="stat">
           <span className="stat-label">Score</span>
-          <span className="stat-value">{score}/{totalWords}</span>
+          <span className="stat-value">{score}/{totalRounds}</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Progress</span>
-          <span className="stat-value">{currentWordIndex + 1}/{totalWords}</span>
+          <span className="stat-label">Current</span>
+          <span className="stat-value">{currentRound ? roundType : 'Ready'}</span>
         </div>
         <div className="stat">
           <span className="stat-label">Accuracy</span>
@@ -29,7 +30,7 @@ const GameStats: React.FC<GameStatsProps> = ({ gameState }) => {
       {gameComplete && (
         <div className="game-complete">
           <h2>🎉 Game Complete!</h2>
-          <p>Final Score: {score}/{totalWords} ({accuracy}%)</p>
+          <p>Final Score: {score}/{totalRounds} ({accuracy}%)</p>
         </div>
       )}
     </div>

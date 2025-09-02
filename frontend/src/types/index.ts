@@ -23,10 +23,11 @@ export interface FeedbackResponse {
 }
 
 export interface GameState {
-  currentRound?: GameRound;
+  currentRound: GameRound | null;
   score: number;
   totalRounds: number;
   gameComplete: boolean;
+  roundsCompleted: number;
   showFeedback: boolean;
   lastFeedback?: FeedbackResponse;
 }
