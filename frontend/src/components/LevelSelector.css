@@ -1,0 +1,98 @@
+.level-selector {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 40px;
+  margin: 40px 0;
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  max-width: 600px;
+  width: 100%;
+}
+
+.level-selector h3 {
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+  text-align: center;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.level-selector .keyboard-hint {
+  margin: 0 0 30px 0;
+  font-size: 1rem;
+  opacity: 0.8;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.level-options {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.level-option {
+  background: rgba(255, 255, 255, 0.9);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 25px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #333;
+  min-width: 160px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.level-option:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #4a6fa5;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  color: #222;
+}
+
+.level-option.selected {
+  background: rgba(255, 255, 255, 1);
+  border-color: #f39c12;
+  box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+  transform: translateY(-2px);
+  color: #222;
+}
+
+.level-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.level-label {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.level-description {
+  font-size: 1rem;
+  opacity: 0.8;
+  line-height: 1.4;
+  color: #555;
+}
+
+.level-option.selected .level-description {
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .level-options {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .level-option {
+    width: 100%;
+    max-width: 280px;
+  }
+}

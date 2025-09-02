@@ -30,6 +30,9 @@ export interface GameState {
   roundsCompleted: number;
   showFeedback: boolean;
   lastFeedback?: FeedbackResponse;
+  languageLevel: LanguageLevel;
 }
+
+export type LanguageLevel = 'beginner' | 'intermediate' | 'advanced';
 
 export type SwipeDirection = 'left' | 'right';

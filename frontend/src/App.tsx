@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import SwipeCard from './components/SwipeCard';
 import GameStats from './components/GameStats';
 import FeedbackModal from './components/FeedbackModal';
-import { GameRound, GameState, FeedbackResponse, UserAnswer } from './types';
+import LevelSelector from './components/LevelSelector';
+import { GameRound, GameState, FeedbackResponse, UserAnswer, LanguageLevel } from './types';
 import './App.css';
 
 const App: React.FC = () => {
@@ -12,10 +13,21 @@ const App: React.FC = () => {
     totalRounds: 10,
     gameComplete: false,
     roundsCompleted: 0,
-    showFeedback: false
+    showFeedback: false,
+    languageLevel: 'beginner'
   });
+  const [levelSelected, setLevelSelected] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+
+  // Handle level change
+  const handleLevelChange = (level: LanguageLevel) => {
+    setGameState(prev => ({
+      ...prev,
+      languageLevel: level
+    }));
+    setLevelSelected(true);
+  };
 
   // Start new game
   const startGame = async () => {
@@ -26,6 +38,7 @@ const App: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ language_level: gameState.languageLevel })
       });
 
       if (!response.ok) {
@@ -33,14 +46,15 @@ const App: React.FC = () => {
       }
 
       const gameRound: GameRound = await response.json();
-      setGameState({
+      setGameState(prev => ({
+        ...prev,
         currentRound: gameRound,
         score: 0,
         totalRounds: 10,
         gameComplete: false,
         roundsCompleted: 0,
         showFeedback: false
-      });
+      }));
       setError('');
     } catch (err) {
       setError('Failed to start game. Make sure the backend is running!');
@@ -103,7 +117,7 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    startGame();
+    setLoading(false); // Don't auto-start game, wait for level selection
   }, []);
 
   if (loading) {
@@ -116,50 +130,44 @@ const App: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="app">
-        <div className="error">
-          <h2>❌ Error</h2>
-          <p>{error}</p>
-          <button onClick={startGame} className="retry-btn">
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>🇫🇷 VocaTinder</h1>
-        <p>Learn French gender with real news headlines!</p>
-      </header>
-
-      <GameStats gameState={gameState} />
-
-      <main className="game-area">
-        {gameState.showFeedback && gameState.lastFeedback ? (
-          <FeedbackModal 
-            feedback={gameState.lastFeedback}
-            onContinue={handleContinue}
-          />
-        ) : gameState.currentRound ? (
-          <SwipeCard 
-            gameRound={gameState.currentRound}
-            onSwipe={handleSwipe}
-          />
-        ) : (
-          <div className="game-complete">
-            <h2>🎉 Félicitations!</h2>
-            <p>Ready to start learning?</p>
-            <button onClick={startGame} className="play-again-btn">
-              Start Game
-            </button>
-          </div>
-        )}
-      </main>
+      <h1>🇫🇷 VocaTinder</h1>
+      <p>Swipe to learn French vocab and gender nouns</p>
+      
+      {!levelSelected && !loading && (
+        <LevelSelector 
+          selectedLevel={gameState.languageLevel}
+          onLevelChange={handleLevelChange}
+          disabled={loading}
+        />
+      )}
+      
+      {levelSelected && !gameState.currentRound && (
+        <GameStats gameState={gameState} />
+      )}
+      
+      {error && <div className="error">{error}</div>}
+      
+      {loading ? (
+        <div className="loading">Loading...</div>
+      ) : gameState.currentRound ? (
+        <SwipeCard 
+          gameRound={gameState.currentRound} 
+          onSwipe={handleSwipe}
+        />
+      ) : levelSelected ? (
+        <button onClick={startGame} className="start-button">
+          {gameState.gameComplete ? 'Play Again' : 'Start Game'}
+        </button>
+      ) : null}
+      
+      {gameState.showFeedback && gameState.lastFeedback && (
+        <FeedbackModal 
+          feedback={gameState.lastFeedback}
+          onContinue={handleContinue}
+        />
+      )}
     </div>
   );
 };

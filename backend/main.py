@@ -6,10 +6,14 @@ from pydantic import BaseModel
 import json
 import random
 import os
+import uuid
 from pathlib import Path
 from data_pipeline import FrenchNewsProcessor, FALLBACK_SENTENCES
 from mistral_client import MistralFeedbackClient
 from typing import List, Dict, Optional
+
+class StartGameRequest(BaseModel):
+    language_level: str = "beginner"
 
 app = FastAPI(title="VocaTinder - French Gender Learning API", version="2.0.0")
 
@@ -73,11 +77,14 @@ async def serve_frontend():
     return FileResponse(frontend_path)
 
 @app.post("/api/start-game")
-async def start_game() -> GameRound:
-    """Start a new game session with 10 challenges"""
+async def start_game(request: StartGameRequest = StartGameRequest()) -> GameRound:
+    """Start a new game and return the first round"""
     try:
-        # Generate 10 challenges from fresh news data
-        game_data = news_processor.generate_game_data(num_rounds=10)
+        session_id = str(uuid.uuid4())
+        
+        # Generate game data using the news processor with language level
+        news_processor = FrenchNewsProcessor()
+        game_data = news_processor.generate_game_data(num_rounds=10, language_level=request.language_level)
         
         if not game_data or len(game_data) < 10:
             # Use fallback data if scraping fails
