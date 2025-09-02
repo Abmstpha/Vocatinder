@@ -162,22 +162,36 @@
   min-height: 400px;
 }
 
+/* Swipe Container */
+.swipe-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  perspective: 1000px;
+}
+
 .swipe-card {
   background: white;
   color: #333;
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  max-width: 400px;
   width: 100%;
   text-align: center;
   position: relative;
-  transform: perspective(1000px) rotateY(0deg);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
   transition: transform 0.3s ease;
 }
 
+.swipe-card:active {
+  cursor: grabbing;
+}
+
 .swipe-card:hover {
-  transform: perspective(1000px) rotateY(5deg) scale(1.02);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
 }
 
 .french-word {
@@ -193,44 +207,52 @@
   margin-bottom: 30px;
 }
 
-.swipe-buttons {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.swipe-btn {
-  padding: 15px 25px;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 140px;
-}
-
-.swipe-btn.feminine {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
-}
-
-.swipe-btn.masculine {
-  background: linear-gradient(135deg, #4834d4, #686de0);
-  color: white;
-}
-
-.swipe-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.swipe-hints {
+/* Swipe Indicators */
+.swipe-indicators {
   display: flex;
   justify-content: space-between;
+  margin-top: 30px;
+  padding: 0 20px;
+}
+
+.swipe-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.swipe-hint.left-hint {
+  color: #e74c3c;
+}
+
+.swipe-hint.right-hint {
+  color: #27ae60;
+}
+
+.swipe-hint .arrow {
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+
+.swipe-hint .label {
   font-size: 0.9rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.keyboard-hint {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.8rem;
   opacity: 0.6;
+}
+
+.keyboard-hint span {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 10px;
+  border-radius: 10px;
 }
 
 .loading, .error, .game-complete {
